@@ -6,6 +6,7 @@ import (
 	"github.com/jessevdk/go-flags"
 	"github.com/pkg/errors"
 	"github.com/reddec/wal/mapqueue"
+	"github.com/reddec/wal/strategy"
 	"github.com/reddec/wal/stream"
 	"io"
 	"io/ioutil"
@@ -128,7 +129,7 @@ func main() {
 
 	ctx, cancel := context.WithCancel(signalContext())
 
-	str := stream.New(queue).Context(ctx).StdLog("[stream] ").Process(st.sendData).Strategy(stream.Delay(st.Delay, st.Jitter)).Start()
+	str := stream.New(queue).Context(ctx).StdLog("[stream] ").Process(st.sendData).Strategy(strategy.Delay(st.Delay, st.Jitter)).Start()
 
 	serverDone := make(chan error, 1)
 	srv := http.Server{Addr: st.Bind}

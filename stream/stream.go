@@ -3,6 +3,7 @@ package stream
 import (
 	"context"
 	"github.com/reddec/wal/mapqueue"
+	"github.com/reddec/wal/strategy"
 	"io/ioutil"
 	"log"
 	"os"
@@ -14,7 +15,7 @@ type ConsumerFunc func(ctx context.Context, num int, data []byte) error
 type StreamConfig struct {
 	queue    *mapqueue.Queue
 	handlers []StreamHandler
-	strategy FinishStrategy
+	strategy strategy.FinishStrategy
 	logger   Logger
 	ctx      context.Context
 }
@@ -25,7 +26,7 @@ func New(queue *mapqueue.Queue) *StreamConfig {
 	return &StreamConfig{
 		queue:    queue,
 		ctx:      context.Background(),
-		strategy: Delay(5*time.Second, 3*time.Second),
+		strategy: strategy.Delay(5*time.Second, 3*time.Second),
 		logger:   log.New(ioutil.Discard, "", log.LstdFlags),
 	}
 }
@@ -49,7 +50,7 @@ func (sc *StreamConfig) Process(handler StreamHandler) *StreamConfig {
 	return sc
 }
 
-func (sc *StreamConfig) Strategy(strategy FinishStrategy) *StreamConfig {
+func (sc *StreamConfig) Strategy(strategy strategy.FinishStrategy) *StreamConfig {
 	sc.strategy = strategy
 	return sc
 }
