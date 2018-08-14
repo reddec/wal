@@ -56,7 +56,7 @@ func start(globalCtx context.Context) error {
 
 See cmd
 
-```
+```go
 import (
     "github.com/reddec/wal/mapqueue"
     "github.com/reddec/wal/stream"
