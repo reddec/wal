@@ -11,6 +11,19 @@ Idea is that if application has an local queue, the transport of messages can be
 
 ![diag](https://user-images.githubusercontent.com/6597086/44100830-7a648f9e-a018-11e8-93da-7bba5e4bab3d.png)
 
+Built-in storage:
+
+* in-memory  - based on hashmap
+* leveldb - based on go-leveldb (preferred)
+
+Built-in processor:
+
+* HTTP client - http client for multiple endpoints with different delivery modes (everyone, at least one)
+
+Built-in strategy:
+
+* Repeat-with-delay - adds delay before new attempt if error appeared after processor
+* Ignore - ignore any errors
 
 ## Basic usage
 
