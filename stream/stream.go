@@ -13,14 +13,19 @@ import (
 // Stream configuration builder
 type StreamConfig struct {
 	queue    *mapqueue.Queue
-	handlers []StreamHandler
+	handlers []StreamHandlerFunc
 	strategy strategy.FinishStrategy
 	logger   Logger
 	ctx      context.Context
 }
 
 // Function that processing package
-type StreamHandler func(ctx context.Context, data []byte) error
+type StreamHandlerFunc func(ctx context.Context, data []byte) error
+
+type StreamHandler interface {
+	// Handle incoming message
+	Handle(ctx context.Context, data []byte) error
+}
 
 // New stream builder. Builder should not be used after final method (Start()).
 // Default parameters is: delay strategy (5s retry and 3s jitter), no logging and background context
@@ -51,9 +56,14 @@ func (sc *StreamConfig) Context(ctx context.Context) *StreamConfig {
 }
 
 // Set processor. Multiple processor will be invoked sequentially as defined if no error occurred.
-func (sc *StreamConfig) Process(handler StreamHandler) *StreamConfig {
+func (sc *StreamConfig) Process(handler StreamHandlerFunc) *StreamConfig {
 	sc.handlers = append(sc.handlers, handler)
 	return sc
+}
+
+// Set processor object. Multiple processor will be invoked sequentially as defined if no error occurred.
+func (sc *StreamConfig) Handle(handler StreamHandler) *StreamConfig {
+	return sc.Process(handler.Handle)
 }
 
 // Set finalizing strategy. By default - delay (5s retry on retry with 3s jitter). Can be nil.

@@ -51,3 +51,53 @@ func start(globalCtx context.Context) error {
     return <-sendStream.Done()
 }
 ```
+
+## HTTP delivery
+
+See cmd
+
+```
+import (
+    "github.com/reddec/wal/mapqueue"
+    "github.com/reddec/wal/stream"
+    "github.com/reddec/wal/processor"
+    "context"
+)
+
+func start(globalCtx context.Context) error {
+    // prepare storage
+	storage, err := mapqueue.NewLevelDbMap("./db")
+	if err != nil {
+		return error
+	}
+	// release resources on exit
+	defer storage.Close()
+
+	// if storage is corrupted, error may appear
+	queue, err := mapqueue.NewMapQueue(storage)
+	if err != nil {
+		return error
+	}
+
+	// setup destinations
+	output := processor.NewHttpClient("http://example.com/", "http://serve.org/").Build()
+
+	// create new stream, handler and then start
+	sendStream := stream.New(queue).
+    		Context(globalCtx).
+    		StdLog("[stream] ").
+    		Handle(output).Start()
+    defer sendStream.Stop()
+
+    // todo: do some work
+    for i:=0; i<100; i++{
+        err = queue.PutString("hello world")
+        if err!= nil {
+            return err
+        }
+    }
+    // ...
+
+    return nil
+}
+```

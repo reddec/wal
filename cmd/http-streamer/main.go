@@ -1,22 +1,17 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"github.com/jessevdk/go-flags"
-	"github.com/pkg/errors"
 	"github.com/reddec/wal/mapqueue"
+	"github.com/reddec/wal/processor"
 	"github.com/reddec/wal/strategy"
 	"github.com/reddec/wal/stream"
-	"io"
 	"io/ioutil"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
-	"sync"
 	"time"
 )
 
@@ -29,62 +24,6 @@ type HttpStream struct {
 	Success   int           `yaml:"success" short:"s" long:"success" env:"SUCCESS"           description:"HTTP success code" default:"200"`
 	Bind      string        `yaml:"bind"    short:"b" long:"bind"    env:"BIND"              description:"Binding address" default:"localhost:9876"`
 	QueueFile string        `yaml:"file"    short:"q" long:"queue"   env:"QUEUE"             description:"queue file name" default:"queue.dat"`
-	client    *http.Client
-}
-
-func (st *HttpStream) dialTimeout(network, addr string) (net.Conn, error) {
-	return net.DialTimeout(network, addr, st.Timeout)
-}
-
-func (st *HttpStream) sendData(ctx context.Context, block []byte) error {
-	child, cancel := context.WithCancel(ctx)
-	wg := sync.WaitGroup{}
-	var errs = make([]error, len(st.URLs))
-	for i, url := range st.URLs {
-		wg.Add(1)
-		go func(i int, url string) {
-			defer wg.Done()
-			err := st.requestUrl(child, url, block)
-			if err != nil {
-				errs[i] = err
-				cancel()
-			}
-		}(i, url)
-	}
-	wg.Wait()
-	cancel()
-
-	var errMessages []string
-	for _, err := range errs {
-		if err != nil {
-			errMessages = append(errMessages, err.Error())
-		}
-	}
-	if errMessages != nil {
-		return errors.New(strings.Join(errMessages, "; "))
-	}
-
-	return nil
-}
-
-func (st *HttpStream) requestUrl(ctx context.Context, url string, block []byte) error {
-	req, err := http.NewRequest(st.Method, url, bytes.NewBuffer(block))
-	if err != nil {
-		panic(err)
-	}
-	req = req.WithContext(ctx)
-	req.ContentLength = int64(len(block))
-
-	res, err := st.client.Do(req)
-	if err != nil {
-		return err
-	}
-	io.Copy(ioutil.Discard, res.Body)
-	res.Body.Close()
-	if res.StatusCode != st.Success {
-		return errors.Errorf("non-success code: %v %v", res.StatusCode, res.Status)
-	}
-	return nil
 }
 
 func signalContext() context.Context {
@@ -108,12 +47,6 @@ func main() {
 		os.Exit(1)
 	}
 	log.SetPrefix("[main] ")
-	transport := &http.Transport{
-		Dial: st.dialTimeout,
-	}
-	st.client = &http.Client{
-		Transport: transport,
-	}
 
 	storage, err := mapqueue.NewLevelDbMap(st.QueueFile)
 	if err != nil {
@@ -129,7 +62,9 @@ func main() {
 
 	ctx, cancel := context.WithCancel(signalContext())
 
-	str := stream.New(queue).Context(ctx).StdLog("[stream] ").Process(st.sendData).Strategy(strategy.Delay(st.Delay, st.Jitter)).Start()
+	output := processor.NewHttpClient(st.URLs...).Timeout(st.Timeout).Method(st.Method).Success(st.Success).Build()
+
+	str := stream.New(queue).Context(ctx).StdLog("[stream] ").Handle(output).Strategy(strategy.Delay(st.Delay, st.Jitter)).Start()
 
 	serverDone := make(chan error, 1)
 	srv := http.Server{Addr: st.Bind}
