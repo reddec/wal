@@ -7,7 +7,7 @@ import (
 	"github.com/reddec/wal/mapqueue"
 )
 
-func ExampleNew_InMemory() {
+func ExampleNew_inMemory() {
 	// prepare storage
 	storage := mapqueue.NewMemoryMap()
 	// nothing to fail in in-memory queue, so error is suppressed
@@ -38,7 +38,7 @@ func ExampleNew_InMemory() {
 	// done
 }
 
-func ExampleNew_Persistent() {
+func ExampleNew_persistent() {
 	// prepare storage
 	storage, err := mapqueue.NewLevelDbMap("./db")
 	// for test reason, all errors are panicing. Don't do it in production code!
