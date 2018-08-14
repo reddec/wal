@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Finalizing strategy for stream. If Done method returns nil, message is committed, otherwise repeated without delay
 type FinishStrategy interface {
 	// Executes at the end of stream. If returns error - retries, else commit
 	Done(ctx context.Context, err error) error
@@ -29,6 +30,7 @@ func (rs *delay) Done(ctx context.Context, err error) error {
 	return nil
 }
 
+// Delay before attempt after error with minimum interval and additional random jitter
 func Delay(interval time.Duration, jitter time.Duration) FinishStrategy {
 	return &delay{
 		Jitter: jitter,
@@ -41,4 +43,5 @@ type ignore struct {
 
 func (rs *ignore) Done(ctx context.Context, err error) error { return nil }
 
+// Ignore result of processing. It means that all messages will be committed
 func Ignore() FinishStrategy { return &ignore{} }

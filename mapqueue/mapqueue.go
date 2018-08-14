@@ -8,8 +8,12 @@ import (
 	"sync"
 )
 
+// The error occurred after access to empty queue
 var ErrEmpty = errors.New("queue is empty")
 
+// Abstract storage interface. Queue provides guarantee that modification method (Put, Del) will be called sequentially in
+// a single co-routing. View methods (Get, Keys) may be called from multiple co-routines but never together
+// with modification methods.
 type Map interface {
 	// Put or override value to map
 	Put(key []byte, value []byte) error
@@ -21,11 +25,13 @@ type Map interface {
 	Keys(handler func(key []byte) error) error
 }
 
+// Storage that should be closed
 type ClosableMap interface {
 	Map
 	io.Closer
 }
 
+// Queue with map-based storage. Thread safe
 type Queue struct {
 	onCreated Notification
 	storage   Map

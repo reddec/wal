@@ -39,6 +39,7 @@ func (bdp *leveldbMap) Keys(handler func(key []byte) error) error {
 }
 func (bdp *leveldbMap) Close() error { return bdp.db.Close() }
 
+// New storage, base on go-leveldb store
 func NewLevelDbMap(location string) (ClosableMap, error) {
 	db, err := leveldb.OpenFile(location, nil)
 	if err != nil {

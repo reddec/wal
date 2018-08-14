@@ -10,8 +10,7 @@ import (
 	"time"
 )
 
-type ConsumerFunc func(ctx context.Context, num int, data []byte) error
-
+// Stream configuration builder
 type StreamConfig struct {
 	queue    *mapqueue.Queue
 	handlers []StreamHandler
@@ -20,8 +19,11 @@ type StreamConfig struct {
 	ctx      context.Context
 }
 
+// Function that processing package
 type StreamHandler func(ctx context.Context, data []byte) error
 
+// New stream builder. Builder should not be used after final method (Start()).
+// Default parameters is: delay strategy (5s retry and 3s jitter), no logging and background context
 func New(queue *mapqueue.Queue) *StreamConfig {
 	return &StreamConfig{
 		queue:    queue,
@@ -31,30 +33,37 @@ func New(queue *mapqueue.Queue) *StreamConfig {
 	}
 }
 
+// Set logger for stream
 func (sc *StreamConfig) Logger(logger Logger) *StreamConfig {
 	sc.logger = logger
 	return sc
 }
 
+// Set default Golang logger to STDERR with defined prefix
+func (sc *StreamConfig) StdLog(prefix string) *StreamConfig {
+	return sc.Logger(log.New(os.Stderr, prefix, log.LstdFlags))
+}
+
+// Set context for stream. By default - background context
 func (sc *StreamConfig) Context(ctx context.Context) *StreamConfig {
 	sc.ctx = ctx
 	return sc
 }
 
-func (sc *StreamConfig) StdLog(prefix string) *StreamConfig {
-	return sc.Logger(log.New(os.Stderr, prefix, log.LstdFlags))
-}
-
+// Set processor. Multiple processor will be invoked sequentially as defined if no error occurred.
 func (sc *StreamConfig) Process(handler StreamHandler) *StreamConfig {
 	sc.handlers = append(sc.handlers, handler)
 	return sc
 }
 
+// Set finalizing strategy. By default - delay (5s retry on retry with 3s jitter). Can be nil.
+// If strategy returns nil, message is committed otherwise repeated without delay.
 func (sc *StreamConfig) Strategy(strategy strategy.FinishStrategy) *StreamConfig {
 	sc.strategy = strategy
 	return sc
 }
 
+// Initialize and start stream. Builder should be no modified after calling this method
 func (sc *StreamConfig) Start() *Stream {
 	child, stop := context.WithCancel(sc.ctx)
 	stream := &Stream{cfg: *sc, done: make(chan error, 1), stop: stop}
@@ -62,16 +71,19 @@ func (sc *StreamConfig) Start() *Stream {
 	return stream
 }
 
+// Processing stream
 type Stream struct {
 	cfg  StreamConfig
 	stop func()
 	done chan error
 }
 
+// Done channel. Once finished, channel will be closed
 func (s *Stream) Done() <-chan error {
 	return s.done
 }
 
+// Stop stream and wait for finish. Can be called multiple times
 func (s *Stream) Stop() {
 	s.stop()
 	<-s.done
@@ -156,6 +168,8 @@ func (s *Stream) processNotification(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
+// General logger interface
 type Logger interface {
+	// Print items in line
 	Println(...interface{})
 }

@@ -2,11 +2,13 @@ package mapqueue
 
 import "sync"
 
+// Subscription of queue events
 type Subscription struct {
 	ch     chan struct{}
 	bucket *Notification
 }
 
+// Unsubscribe from queue and close notification channel
 func (sb *Subscription) Close() {
 	sb.bucket.lock.Lock()
 	for i, s := range sb.bucket.channels {
@@ -22,6 +24,7 @@ func (sb *Subscription) Close() {
 // Wait for new events
 func (sb *Subscription) Wait() <-chan struct{} { return sb.ch }
 
+// Manager of queue events
 type Notification struct {
 	channels []chan struct{}
 	lock     sync.RWMutex
