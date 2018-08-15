@@ -7,6 +7,7 @@ import (
 	"github.com/reddec/wal/stream"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"net"
 	"net/http"
 	"strings"
@@ -22,6 +23,8 @@ const (
 	AtLeastOne HttpClientMode = 1
 	// Must delivery to all urls
 	Everyone = 2
+	// Must delivery only once
+	AtMostOnce = 3
 )
 
 // HTTP client configuration builder
@@ -104,6 +107,32 @@ type httpProcessor struct {
 }
 
 func (htp *httpProcessor) Handle(ctx context.Context, data []byte) error {
+	if htp.cfg.mode == AtMostOnce {
+		return htp.shuffleSequentialSend(ctx, data)
+	} else {
+		return htp.massiveSend(ctx, data)
+	}
+}
+
+func (htp *httpProcessor) shuffleSequentialSend(ctx context.Context, data []byte) error {
+	var errMessages []string
+	cp := make([]string, len(htp.cfg.urls))
+	copy(cp, htp.cfg.urls)
+	rand.Shuffle(len(cp), func(i, j int) {
+		cp[i], cp[j] = cp[j], cp[i]
+	})
+	for _, url := range cp {
+		err := htp.requestUrl(ctx, url, data)
+		if err != nil {
+			errMessages = append(errMessages, err.Error())
+		} else {
+			return nil
+		}
+	}
+	return errors.New(strings.Join(errMessages, "; "))
+}
+
+func (htp *httpProcessor) massiveSend(ctx context.Context, data []byte) error {
 	child, cancel := context.WithCancel(ctx)
 	wg := sync.WaitGroup{}
 	var errs = make([]error, len(htp.cfg.urls))
@@ -138,9 +167,7 @@ func (htp *httpProcessor) Handle(ctx context.Context, data []byte) error {
 		}
 	}
 	return errors.New(strings.Join(errMessages, "; "))
-
 }
-
 func (htp *httpProcessor) requestUrl(ctx context.Context, url string, block []byte) error {
 	req, err := http.NewRequest(htp.cfg.method, url, bytes.NewBuffer(block))
 	if err != nil {

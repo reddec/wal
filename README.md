@@ -69,6 +69,12 @@ func start(globalCtx context.Context) error {
 
 See cmd
 
+Supports modes:
+
+* Everyone - will fail if even one request failed
+* At-least-one - will pass if even one request was successful
+* At-most-one - will randomize urls and try one-by-one till first successful request, otherwise failed
+
 ```go
 import (
     "github.com/reddec/wal/mapqueue"
