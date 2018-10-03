@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/jessevdk/go-flags"
+	"github.com/reddec/storages/leveldbstorage"
 	"github.com/reddec/wal/mapqueue"
 	"github.com/reddec/wal/processor"
 	"github.com/reddec/wal/strategy"
@@ -48,7 +49,7 @@ func main() {
 	}
 	log.SetPrefix("[main] ")
 
-	storage, err := mapqueue.NewLevelDbMap(st.QueueFile)
+	storage, err := leveldbstorage.New(st.QueueFile)
 	if err != nil {
 		panic(err)
 	}
