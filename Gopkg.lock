@@ -20,6 +20,16 @@
   version = "v0.8.0"
 
 [[projects]]
+  name = "github.com/reddec/storages"
+  packages = [
+    ".",
+    "leveldbstorage",
+    "memstorage"
+  ]
+  revision = "7446094677cd0ddaa3797a99b1b9a54af686d9c4"
+  version = "v0.0.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/syndtr/goleveldb"
   packages = [
@@ -41,6 +51,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7a83c4529d071a2c838336245918feb93a1825de9f0b1af516560618d0876429"
+  inputs-digest = "5117d66cee1f0879afe0e6157b0c5702d05ab1a3750e3fb85bd6506487ae9243"
   solver-name = "gps-cdcl"
   solver-version = 1

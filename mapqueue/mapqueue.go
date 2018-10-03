@@ -2,7 +2,7 @@ package mapqueue
 
 import (
 	"github.com/pkg/errors"
-	"io"
+	"github.com/reddec/storages"
 	"math"
 	"strconv"
 	"sync"
@@ -11,30 +11,10 @@ import (
 // The error occurred after access to empty queue
 var ErrEmpty = errors.New("queue is empty")
 
-// Abstract storage interface. Queue provides guarantee that modification method (Put, Del) will be called sequentially in
-// a single co-routing. View methods (Get, Keys) may be called from multiple co-routines but never together
-// with modification methods.
-type Map interface {
-	// Put or override value to map
-	Put(key []byte, value []byte) error
-	// Get or fail value by key
-	Get(key []byte) ([]byte, error)
-	// Delete key and value
-	Del(key []byte) error
-	// Iterate over all keys
-	Keys(handler func(key []byte) error) error
-}
-
-// Storage that should be closed
-type ClosableMap interface {
-	Map
-	io.Closer
-}
-
 // Queue with map-based storage. Thread safe
 type Queue struct {
 	onCreated Notification
-	storage   Map
+	storage   storages.Storage
 	lock      sync.RWMutex
 	readId    int64
 	writeId   int64
@@ -101,7 +81,7 @@ func (q *Queue) Remove() error {
 	return nil
 }
 
-func NewMapQueue(storage Map) (*Queue, error) {
+func NewMapQueue(storage storages.Storage) (*Queue, error) {
 	var minVal int64 = math.MaxInt64
 	var maxVal int64 = math.MinInt64
 	var empty = true

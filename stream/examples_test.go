@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/reddec/storages/leveldbstorage"
+	"github.com/reddec/storages/memstorage"
 	"github.com/reddec/wal/mapqueue"
 )
 
 func ExampleNew_inMemory() {
 	// prepare storage
-	storage := mapqueue.NewMemoryMap()
+	storage := memstorage.New()
 	// nothing to fail in in-memory queue, so error is suppressed
 	queue, _ := mapqueue.NewMapQueue(storage)
 	// for testing we should control stream
@@ -40,7 +42,7 @@ func ExampleNew_inMemory() {
 
 func ExampleNew_persistent() {
 	// prepare storage
-	storage, err := mapqueue.NewLevelDbMap("./db")
+	storage, err := leveldbstorage.New("./db")
 	// for test reason, all errors are panicing. Don't do it in production code!
 	if err != nil {
 		panic(err)

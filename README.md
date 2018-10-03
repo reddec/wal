@@ -11,10 +11,7 @@ Idea is that if application has an local queue, the transport of messages can be
 
 ![diag](https://user-images.githubusercontent.com/6597086/44100830-7a648f9e-a018-11e8-93da-7bba5e4bab3d.png)
 
-Built-in storage:
-
-* in-memory  - based on hashmap
-* leveldb - based on go-leveldb (preferred)
+Built-in [storages](https://github.com/reddec/storages): in-memory, leveldb and else...
 
 Built-in processor:
 
@@ -80,12 +77,13 @@ import (
     "github.com/reddec/wal/mapqueue"
     "github.com/reddec/wal/stream"
     "github.com/reddec/wal/processor"
+    "github.com/reddec/storages/leveldbstorage"
     "context"
 )
 
 func start(globalCtx context.Context) error {
     // prepare storage
-	storage, err := mapqueue.NewLevelDbMap("./db")
+	storage, err := leveldbstorage.New("./db")
 	if err != nil {
 		return error
 	}
