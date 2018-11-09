@@ -118,3 +118,56 @@ func start(globalCtx context.Context) error {
     return nil
 }
 ```
+
+# CLI generators
+
+
+## typedqueue
+
+Generates typed queue.
+
+Usage:
+
+    Usage of typedqueue:
+      -out string
+            Output file (default: <type name>_storage.go)
+      -package string
+            Output package (default: same as in input file)
+      -type string
+            Type name to wrap
+
+
+Embedded usage example:
+
+```go
+
+type Sample struct {
+    // ...
+}
+
+//go:generate typedqueue -type Sample
+
+```
+
+will produce (methods body omitted)
+
+```go
+
+// Typed queue for Sample
+type SampleQueue struct {
+	queue *mapqueue.Queue
+}
+
+// Creates new queue for Sample
+func NewSampleQueue(queue *mapqueue.Queue) *SampleQueue {}
+
+// Put single Sample encoded in JSON into queue
+func (cs *SampleQueue) Put(item *Sample) error {}
+
+// Peek single Sample from queue and decode data as JSON
+func (cs *SampleQueue) Head() (*Sample, error) {}
+
+// Base (underline) queue
+func (cs *SampleQueue) Base() *mapqueue.Queue {}
+
+```

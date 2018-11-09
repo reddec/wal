@@ -2,35 +2,84 @@
 
 
 [[projects]]
+  digest = "1:12bc53a794bd3f5169f71e87c18e15df70c51324e51d84a6b83dbdadf366d2c7"
+  name = "github.com/dave/jennifer"
+  packages = ["jen"]
+  pruneopts = "UT"
+  revision = "e2c46c587b5f3cf3dec985fd8f7e8232f9e40ac9"
+  version = "v1.1.0"
+
+[[projects]]
+  digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  pruneopts = "UT"
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
+
+[[projects]]
   branch = "master"
+  digest = "1:4a0c6bb4805508a6287675fac876be2ac1182539ca8a32468d8128882e9d5009"
   name = "github.com/golang/snappy"
   packages = ["."]
+  pruneopts = "UT"
   revision = "2e65f85255dbc3072edf28d6b5b8efc472979f5a"
 
 [[projects]]
+  digest = "1:7b5c6e2eeaa9ae5907c391a91c132abfd5c9e8a784a341b5625e750c67e6825d"
+  name = "github.com/gorilla/websocket"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d"
+  version = "v1.4.0"
+
+[[projects]]
+  digest = "1:a2cff208d4759f6ba1b1cd228587b0a1869f95f22542ec9cd17fff64430113c7"
   name = "github.com/jessevdk/go-flags"
   packages = ["."]
+  pruneopts = "UT"
   revision = "c6ca198ec95c841fdb89fc0de7496fed11ab854e"
   version = "v1.4.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:901625a0300fa83074dcf2510424c26a19dc3edadf67b34ca45a78f879ac4b0c"
+  name = "github.com/knq/snaker"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "d9ad1e7f342a5b58202aa92c5f1106d7bb8b9c73"
+
+[[projects]]
+  digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
   name = "github.com/pkg/errors"
   packages = ["."]
+  pruneopts = "UT"
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
 
 [[projects]]
+  digest = "1:303b7d5d2e9575775880f1e3f8405afe1e256cb67616c2606f49da442583cfd7"
   name = "github.com/reddec/storages"
   packages = [
     ".",
     "leveldbstorage",
-    "memstorage"
+    "memstorage",
   ]
+  pruneopts = "UT"
   revision = "7446094677cd0ddaa3797a99b1b9a54af686d9c4"
   version = "v0.0.1"
 
 [[projects]]
   branch = "master"
+  digest = "1:c01ff79cc4168e309851038973528b441981c440ac4b6c007b4ce89f88c4788d"
+  name = "github.com/reddec/symbols"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "bba48d4085df1cdb483b3d08dd6334ec0cb357a4"
+
+[[projects]]
+  branch = "master"
+  digest = "1:b3cfb8d82b1601a846417c3f31c03a7961862cb2c98dcf0959c473843e6d9a2b"
   name = "github.com/syndtr/goleveldb"
   packages = [
     "leveldb",
@@ -44,13 +93,24 @@
     "leveldb/opt",
     "leveldb/storage",
     "leveldb/table",
-    "leveldb/util"
+    "leveldb/util",
   ]
+  pruneopts = "UT"
   revision = "c4c61651e9e37fa117f53c5a906d3b63090d8445"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5117d66cee1f0879afe0e6157b0c5702d05ab1a3750e3fb85bd6506487ae9243"
+  input-imports = [
+    "github.com/dave/jennifer/jen",
+    "github.com/gorilla/websocket",
+    "github.com/jessevdk/go-flags",
+    "github.com/knq/snaker",
+    "github.com/pkg/errors",
+    "github.com/reddec/storages",
+    "github.com/reddec/storages/leveldbstorage",
+    "github.com/reddec/storages/memstorage",
+    "github.com/reddec/symbols",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
